@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+build/
+dist/
+.venv/
+venv/
+env/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 运行时产生的本地状态（含敏感信息，绝不入库）
+config.yml
+*.session
+*.session-journal
+session/
+data.db
+data.db-*
+logs/
+downloads/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,7 @@
+# requirements.txt
+telethon>=1.28.5
+pyyaml    
+cryptg
+loguru>=0.7.0
+python-socks
+opencv-python

@@ -1,0 +1,21 @@
+# Telegram API 配置
+telegram:
+  # 从 https://my.telegram.org 获取
+  api_id:
+  api_hash:
+  # 从 @BotFather 获取
+  bot_token:
+
+  proxy:
+    enabled: false
+    proxy_type: "socks5"  # socks4, socks5, http
+    addr: "127.0.0.1"
+    port: 12334
+    # username:
+    # password:
+
+# 日志
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  log_path: "logs/operation.log"
