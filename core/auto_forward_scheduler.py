@@ -89,12 +89,15 @@ class AutoForwardScheduler:
     async def _forward_loop(self):
         """主转发循环"""
         self.logger.info("转发循环启动")
-        
+
         try:
             while self.is_running:
+                # 每轮先检查 db 里的配置变更（用户在 bot 里新加/改频道无需等待）
+                await self._check_config_update()
+
                 # 处理一个频道
                 processed = await self._process_next_channel()
-                
+
                 if processed:
                     # 处理完一个频道后等待1分钟
                     self.logger.info("等待1分钟再处理下一个频道")
@@ -103,26 +106,22 @@ class AutoForwardScheduler:
                     except asyncio.TimeoutError:
                         pass
                 else:
-                    # 如果没有可处理的频道，等待一段时间再继续
-                    self.logger.info("没有符合条件的频道需要处理，等待配置检查")
+                    # 没有可处理的频道：短暂等待后重新检查 db
+                    # 比之前的 30s 短，让"刚在 bot 里配的频道"能尽快被拾起
                     try:
-                        # 等待30秒再继续循环
-                        await asyncio.wait_for(self.stop_event.wait(), timeout=30)
+                        await asyncio.wait_for(self.stop_event.wait(), timeout=10)
                     except asyncio.TimeoutError:
                         pass
-                
+
                 if self.stop_event.is_set():
                     break
-                
-                # 每次循环都检查是否需要更新配置
-                await self._check_config_update()
-        
+
         except asyncio.CancelledError:
             self.logger.info("转发循环被取消")
         except Exception as e:
             self.logger.error(f"转发循环发生错误: {str(e)}")
             self.logger.error(traceback.format_exc())
-        
+
         self.logger.info("转发循环已停止")
     
     async def _load_channel_configs(self):
@@ -187,11 +186,9 @@ class AutoForwardScheduler:
             self.logger.error(traceback.format_exc())
     
     async def _check_config_update(self):
-        """检查是否需要更新配置"""
+        """检查是否需要更新配置（30 秒内不会重复读 db，避免每轮空转都打数据库）"""
         current_time = time.time()
-        # 如果距离上次加载已经过去了30分钟，重新加载配置
-        if current_time - self.last_config_load_time > 1800:  # 30分钟
-            self.logger.info("定期检查配置更新")
+        if current_time - self.last_config_load_time > 30:
             await self._load_channel_configs()
     
     async def _process_next_channel(self):
